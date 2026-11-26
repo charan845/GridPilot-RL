@@ -1,0 +1,10 @@
+algo,forecast_mode,total_energy_cost_mean,peak_demand_kw_mean,total_operating_cost_mean,cvar20_operating_cost
+ppo,forecast_blind,18.686,5.957,24.400,51.479
+ppo,point_forecast,22.473,9.140,32.210,59.349
+ppo,uncertainty_aware,22.562,9.016,33.280,61.563
+residual_sac,forecast_blind,12.479,4.534,20.174,46.251
+residual_sac,point_forecast,12.479,4.683,21.621,45.480
+residual_sac,uncertainty_aware,15.219,4.897,24.816,50.121
+sac,forecast_blind,15.202,4.752,22.016,46.263
+sac,point_forecast,14.613,5.150,19.985,44.886
+sac,uncertainty_aware,15.478,5.721,24.683,50.259

@@ -1,0 +1,10 @@
+policy,scenario,total_energy_cost_mean,peak_demand_kw_mean,battery_degradation_cost_mean,total_carbon_kg_mean,total_operating_cost_mean,cvar20_operating_cost,operating_cost_reduction_pct,shield_intervention_rate_mean
+oracle_lp,nominal_real,-4.224,1.034,5.991,16.360,2.723,24.531,86.380,0.000
+rule_tou,nominal_real,4.708,3.294,4.447,36.578,11.735,32.354,41.302,0.033
+residual_ppo,nominal_real,6.086,3.529,5.173,40.438,14.060,34.535,29.672,0.118
+rule_peak_shave,nominal_real,9.358,2.155,3.099,49.020,14.897,36.187,25.485,0.031
+sac,nominal_real,10.634,3.977,5.652,56.519,19.771,43.806,1.104,0.663
+no_battery,nominal_real,16.124,3.903,0.000,70.388,19.992,44.491,0.000,0.000
+residual_sac,nominal_real,12.826,3.402,5.113,56.997,21.180,45.357,-5.944,0.312
+ppo,nominal_real,18.411,7.407,3.763,78.518,27.863,52.835,-39.373,0.636
+dqn,nominal_real,17.718,5.807,5.319,74.037,27.871,46.599,-39.414,0.662

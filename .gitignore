@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.venv/
+venv/
+data/raw/
+results/models/*.zip
+results/models/*.pkl
+results/logs/
+.DS_Store
