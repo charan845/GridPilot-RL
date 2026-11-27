@@ -14,7 +14,7 @@ Instead of standard boilerplate RL on synthetic sine curves, GridPilot-RL introd
 
 2. **Analytical Physics Safety Shield** — Projects raw actions onto feasible **SoC bounds**, **inverter ramp-rate limits** (±8 kW/hr), and a **pre-peak SoC reserve floor** ahead of evening peaks, logging the exact `shield_intervention_rate` per policy.
 
-3. **Uncertainty-Aware Multi-Horizon Forecasting** — Conditions the policy on `H=6` hour look-ahead demand, solar PV, and tariff forecasts **plus calibrated horizon-dependent uncertainty intervals** `σ_{t+1 : t+H}`, systematically compared via a 3-way ablation (*Forecast-Blind* vs. *Point Forecast* vs. *Uncertainty-Aware*).
+3. **Uncertainty-Aware Multi-Horizon Forecasting** — Conditions the policy on `H=6` hour look-ahead demand, solar PV, and tariff forecasts **plus calibrated horizon-dependent uncertainty intervals** (`σ` for horizons `t+1` through `t+H`), systematically compared via a 3-way ablation (*Forecast-Blind* vs. *Point Forecast* vs. *Uncertainty-Aware*).
 
 4. **Electrochemical Aging, Carbon Co-Optimization & Tail-Risk (CVaR-20%) + Exact LP Oracle** — Models non-linear SoC-stress & ramp-stress battery degradation, real hourly German grid CO₂ intensity, **CVaR-20%** worst-quintile operating cost, and an exact **HiGHS Linear Programming Oracle** establishing the theoretical optimal lower bound.
 
@@ -23,46 +23,43 @@ Instead of standard boilerplate RL on synthetic sine curves, GridPilot-RL introd
 ## System Architecture
 
 ```text
-+-----------------------------------------------------------------------------+
-|                         1. REAL DATA & STRESS ENGINE                        |
-|  - OPSD Konstanz Smart Meters (DE_KN_residential3, 4, 6): 9,224 hrs        |
-|  - Fraunhofer Energy-Charts: DE-AT-LU Spot Prices + Hourly Grid CO2 Mix    |
-|  - Strict Chronological Split: 75% Train (6,912h) / 25% Held-Out Test      |
-|  - 6 Evaluation Regimes: nominal_real, high_demand, cloudy_solar_drop,     |
-|    volatile_tariff, forecast_dropout, compound_stress                       |
-+--------------------------------------+--------------------------------------+
-                                       |
-                                       v
-+-----------------------------------------------------------------------------+
-|                    2. CUSTOM GYMNASIUM ENVIRONMENT                          |
-|  SmartGridEnv  (Box[-1,1] for PPO/SAC | Discrete(5) for DQN)               |
-|  - State (53-dim): [SoC, Load, Solar, Price, CO2, sin/cos(hr), PeakSoFar,  |
-|                     NetLoad, PrevPower, PriceSpread, 6h Forecasts+Net,     |
-|                     6h Uncertainty Bands (sigma)]                           |
-|  - Physics Safety Shield: SoC bounds + Ramp-rate limit + Pre-peak reserve  |
-|  - Multi-Objective Reward: Energy Cost + Incremental Peak Penalty           |
-|                            + Non-Linear Aging + Carbon Shadow Cost         |
-+--------------------------------------+--------------------------------------+
-                                       |
-            +--------------------------+--------------------------+
-            v                                                     v
-+-------------------------------+               +-----------------------------+
-|  3A. RL CONTROLLERS (PyTorch) |               |  3B. BASELINES & ORACLE     |
-|  - PPO, SAC, DQN              |               |  - No-Battery (Grid Only)   |
-|  - Residual-PPO, Residual-SAC |               |  - Time-of-Use Heuristic    |
-|  - EvalCallback + physical    |               |  - Peak-Shaving Heuristic   |
-|    stationary obs scaling     |               |  - Exact HiGHS LP Oracle    |
-|  - [192, 192] MLP, gamma=0.995|               |                             |
-+---------------+---------------+               +--------------+--------------+
-                |                                              |
-                +----------------------+-----------------------+
-                                       v
-+-----------------------------------------------------------------------------+
-|                4. EVALUATION, ABLATION & VISUALIZATION SUITE                |
-|  - Metrics: Energy Cost ($), Peak (kW), Aging ($), CO2 (kg), CVaR-20% ($)  |
-|  - Forecast Ablation: Forecast-Blind vs Point Forecast vs Uncertainty-Aware |
-|  - Publication Figures: Learning curves, 48h dispatch, Pareto, Robustness  |
-+-----------------------------------------------------------------------------+
++---------------------------------------------------------------------------+
+|                       1. REAL DATA & STRESS ENGINE                        |
+|  OPSD Konstanz Smart Meters (DE_KN_residential3, 4, 6): 9,224 hrs        |
+|  Fraunhofer Energy-Charts: DE-AT-LU Spot Prices + Grid CO2 Mix           |
+|  Chronological Split: 75% Train (6,912h) / 25% Held-Out Test             |
+|  6 Stress Regimes: nominal, high_demand, cloudy, volatile, dropout, all   |
++------------------------------------+--------------------------------------+
+                                     |
+                                     v
++---------------------------------------------------------------------------+
+|                   2. CUSTOM GYMNASIUM ENVIRONMENT                         |
+|  SmartGridEnv (Box[-1,1] for PPO/SAC | Discrete(5) for DQN)              |
+|  State (53-dim): SoC, Load, Solar, Price, CO2, sin/cos(hr), PeakSoFar,   |
+|    NetLoad, PrevPower, PriceSpread, 6h Forecasts+Net, 6h Sigma Bands     |
+|  Physics Safety Shield: SoC bounds + Ramp-rate + Pre-peak reserve         |
+|  Reward: Energy Cost + Peak Penalty + Aging + Carbon Shadow Cost          |
++------------------------------------+--------------------------------------+
+                                     |
+           +-------------------------+-------------------------+
+           v                                                   v
++-------------------------------+           +-------------------------------+
+|  3A. RL CONTROLLERS (PyTorch) |           |  3B. BASELINES & ORACLE       |
+|  PPO, SAC, DQN                |           |  No-Battery (Grid Only)       |
+|  Residual-PPO, Residual-SAC   |           |  Time-of-Use Heuristic        |
+|  EvalCallback + stationary    |           |  Peak-Shaving Heuristic       |
+|    physical obs scaling       |           |  Exact HiGHS LP Oracle        |
+|  [192,192] MLP, gamma=0.995   |           |                               |
++---------------+---------------+           +---------------+---------------+
+                |                                           |
+                +---------------------+---------------------+
+                                      v
++---------------------------------------------------------------------------+
+|              4. EVALUATION, ABLATION & VISUALIZATION SUITE                |
+|  Metrics: Energy Cost, Peak (kW), Aging ($), CO2 (kg), CVaR-20% ($)      |
+|  Forecast Ablation: Blind vs Point Forecast vs Uncertainty-Aware          |
+|  Figures: Learning curves, 48h dispatch, Pareto, Robustness              |
++---------------------------------------------------------------------------+
 ```
 
 ---
@@ -76,7 +73,7 @@ All experiments use **9,224 continuous hourly observations (54.9 weeks, 2016-05-
   demand_t = grid_import_t + pv_t - grid_export_t
   ```
 - **Dynamic Electricity Tariffs:** Real hourly EPEX Spot DE-AT-LU day-ahead prices (`api.energy-charts.info`) mapped to a dynamic prosumer retail tariff (range: $0.08–$0.63/kWh, mean: $0.241/kWh, feed-in export ratio: 0.25).
-- **Grid Carbon Intensity:** Real 15-minute German generation mix (`api.energy-charts.info/public_power`) weighted by IPCC lifecycle emission factors (range: 0.183–0.651 kg CO2/kWh, mean: 0.481 kg CO2/kWh).
+- **Grid Carbon Intensity:** Real 15-minute German generation mix (`api.energy-charts.info/public_power`) weighted by IPCC lifecycle emission factors (range: 0.183–0.651 kg CO₂/kWh, mean: 0.481 kg CO₂/kWh).
 - **Zero Temporal Leakage:** Chronological split into **6,912 training hours (41.1 weeks)** and **2,312 held-out test hours (13.8 weeks)**.
 
 ---
