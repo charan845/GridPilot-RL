@@ -72,7 +72,7 @@ All experiments use **9,224 continuous hourly observations (54.9 weeks, 2016-05-
   ```
   demand_t = grid_import_t + pv_t - grid_export_t
   ```
-- **Dynamic Electricity Tariffs:** Real hourly EPEX Spot DE-AT-LU day-ahead prices (`api.energy-charts.info`) mapped to a dynamic prosumer retail tariff (range: $0.08–$0.63/kWh, mean: $0.241/kWh, feed-in export ratio: 0.25).
+- **Dynamic Electricity Tariffs:** Real hourly EPEX Spot DE-AT-LU day-ahead prices (`api.energy-charts.info`) mapped to a dynamic prosumer retail tariff (range: \$0.08–\$0.63/kWh, mean: \$0.241/kWh, feed-in export ratio: 0.25).
 - **Grid Carbon Intensity:** Real 15-minute German generation mix (`api.energy-charts.info/public_power`) weighted by IPCC lifecycle emission factors (range: 0.183–0.651 kg CO₂/kWh, mean: 0.481 kg CO₂/kWh).
 - **Zero Temporal Leakage:** Chronological split into **6,912 training hours (41.1 weeks)** and **2,312 held-out test hours (13.8 weeks)**.
 
@@ -104,19 +104,19 @@ Evaluated over **20 paired weekly episodes per scenario** (168 hours/episode, 40
 |---|---|---:|---:|---:|---:|
 | `ppo` | Forecast-Blind (H=0) | 18.686 | 5.957 | 24.400 | 51.479 |
 | `ppo` | Point Forecast (H=6) | 22.473 | 9.140 | 32.210 | 59.349 |
-| `ppo` | Uncertainty-Aware (H=6, mu+sigma) | 22.562 | 9.016 | 33.280 | 61.563 |
+| `ppo` | Uncertainty-Aware (H=6, μ+σ) | 22.562 | 9.016 | 33.280 | 61.563 |
 | `sac` | **Point Forecast (H=6)** ⭐ | **14.613** | **5.150** | **19.985** | **44.886** |
 | `sac` | Forecast-Blind (H=0) | 15.202 | 4.752 | 22.016 | 46.263 |
-| `sac` | Uncertainty-Aware (H=6, mu+sigma) | 15.478 | 5.721 | 24.683 | 50.259 |
+| `sac` | Uncertainty-Aware (H=6, μ+σ) | 15.478 | 5.721 | 24.683 | 50.259 |
 | **`residual_sac`** | **Forecast-Blind (H=0)** ⭐ | **12.479** | **4.534** | **20.174** | **46.251** |
 | `residual_sac` | Point Forecast (H=6) | 12.479 | 4.683 | 21.621 | 45.480 |
-| `residual_sac` | Uncertainty-Aware (H=6, mu+sigma) | 15.219 | 4.897 | 24.816 | 50.121 |
+| `residual_sac` | Uncertainty-Aware (H=6, μ+σ) | 15.219 | 4.897 | 24.816 | 50.121 |
 
 **Key Takeaways:**
 - **`Residual-PPO` is the best RL controller:** Achieves +29.7% total operating cost reduction at 150k steps — the only RL agent beating the `no_battery` baseline, with just 11.8% shield intervention rate vs. 63–66% for vanilla PPO/SAC/DQN.
 - **Physics-guided priors are critical:** High shield rates for vanilla RL (63–66%) confirm that from-scratch exploration destroys performance at this budget.
-- **`SAC` with Point Forecast is the ablation winner:** $19.985/wk operating cost — better than uncertainty-aware mode, suggesting sigma channels add noise at this timestep budget.
-- **Training cost progression (150k steps, T4 GPU):** DQN $166→$37/wk, PPO $166→$95/wk, SAC $110→$32/wk, Residual-PPO $95→$52/wk, Residual-SAC $82→$73/wk.
+- **`SAC` with Point Forecast is the ablation winner:** \$19.985/wk operating cost — better than uncertainty-aware mode, suggesting sigma channels add noise at this timestep budget.
+- **Training cost progression (150k steps, T4 GPU):** DQN \$166→\$37/wk, PPO \$166→\$95/wk, SAC \$110→\$32/wk, Residual-PPO \$95→\$52/wk, Residual-SAC \$82→\$73/wk.
 
 ---
 
@@ -143,7 +143,7 @@ GridPilot-RL/
 │   └── processed/
 │       └── opsd_real_microgrid.csv      # 9,224 real hourly OPSD + Energy-Charts rows
 ├── notebooks/
-│   └── GridPilot_RL_Colab.ipynb        # Ready-to-run Google Colab / Kaggle notebook
+│   └── GridPilot_RL_Colab.ipynb         # Ready-to-run Google Colab / Kaggle notebook
 ├── results/
 │   ├── figures/                         # Pre-generated PNG plots (6 files)
 │   │   ├── training_curves.png
@@ -168,7 +168,7 @@ GridPilot-RL/
 │       │   └── smart_grid_env.py        # Custom Gymnasium env + Safety Shield + Residual mode
 │       ├── baselines/
 │       │   ├── rule_based.py            # No-Battery, ToU Rule, Peak-Shave Rule baselines
-│       │   └── oracle.py               # Exact HiGHS LP perfect-foresight solver
+│       │   └── oracle.py                # Exact HiGHS LP perfect-foresight solver
 │       ├── agents/
 │       │   └── sb3_runner.py            # PPO, SAC, DQN, Residual-PPO, Residual-SAC wrappers
 │       └── evaluation/
